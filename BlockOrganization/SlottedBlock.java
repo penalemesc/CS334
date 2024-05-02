@@ -27,7 +27,10 @@ public class SlottedBlock
     private int intBufferLength;
     /*At the time im starting this (17:00 02/05/2024) im treating it
     like a tree because that is the data structure that was the most fresh on my mind
-    though I think I could try and implement the blocks like a linked list instead of tree */
+    though I think I could try and implement the blocks like a linked list instead of tree
+    
+    Yo creo que como arbol va a ser un poco más facíl porque ya de por si tengo una derecha que
+    puedo tratar como atras y una izquierda que puedo tratar como adelante*/
     private SlottedBlock prevBlockID;
     private SlottedBlock left;
     private SlottedBlock right;
