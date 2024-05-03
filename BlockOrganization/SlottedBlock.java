@@ -8,6 +8,7 @@ import java.nio.*;
  * @author Conrado Peña Lemes modified this code starting on 02/05/2024 (D/M/Y)
  * Minibase project
  */
+
 public class SlottedBlock
 {
     public static class BlockFullException extends RuntimeException {};
@@ -37,8 +38,9 @@ public class SlottedBlock
     puedo tratar como atras y una izquierda que puedo tratar como adelante
     entonces en esta idea de implementacion de arbol, la izquierda seria el parametro nextB
     y la derecha seria prevB*/
-    private SlottedBlock nextB;
-    private SlottedBlock prevB;
+    private int blockId;
+    private int nextB;
+    private int prevB;
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -68,6 +70,9 @@ public class SlottedBlock
      */
     public void setBlockId(int blockId)
     {
+        //Tried doing it by creating a block called initialBlock, but that didnt work
+        //static SlottedBlock initialBlock;
+        //initialBlock = blockId;
     }
 
     /**
@@ -76,7 +81,10 @@ public class SlottedBlock
      */
     public int getBlockId()
     {
-        return -1;
+        //I need to return blockId that much im certain off, however I need to first figure out how to set 
+        //said block id
+        //blockId = initialBlock.blockId();
+        return blockId;
     }
 
     /**
@@ -133,9 +141,12 @@ public class SlottedBlock
         el tamaño total del intBuffer, la solucion creo que seria facil, seria revisar
         como hacer que el intbuffer se relacione solo con un bloque a la vez y no todos los bloques
         probar entonces no me preocupo hasta que tenga como corroboralo*/
-        intBufferLength = intBuffer.capacity();
+        /*intBufferLength = intBuffer.capacity();
         byte[] lengthBytes = intBufferLength;
-        return lengthBytes;
+        return lengthBytes;*/
+        return -1;
+        /*estaba en lo correcto, eso no anda pero creo que tan lejos no estoy */
+
     }
         
 
