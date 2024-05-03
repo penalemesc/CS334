@@ -5,6 +5,7 @@ import java.nio.*;
  * adds the appropriate struture to it.
  *
  * @author Dave Musicant, with considerable inspiration from the UW-Madison
+ * @author Conrado Peña Lemes modified this code starting on 02/05/2024 (D/M/Y)
  * Minibase project
  */
 public class SlottedBlock
@@ -29,11 +30,15 @@ public class SlottedBlock
     like a tree because that is the data structure that was the most fresh on my mind
     though I think I could try and implement the blocks like a linked list instead of tree
     
+    Update (21:35 same day): im thinking now this is probably too simple of a solution and probably
+    will not work, however the make file that we got to make it run doesnt work on this machine so idk what to do now!
+    
     Yo creo que como arbol va a ser un poco más facíl porque ya de por si tengo una derecha que
-    puedo tratar como atras y una izquierda que puedo tratar como adelante*/
-    private SlottedBlock prevBlockID;
-    private SlottedBlock left;
-    private SlottedBlock right;
+    puedo tratar como atras y una izquierda que puedo tratar como adelante
+    entonces en esta idea de implementacion de arbol, la izquierda seria el parametro nextB
+    y la derecha seria prevB*/
+    private SlottedBlock nextB;
+    private SlottedBlock prevB;
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -80,7 +85,7 @@ public class SlottedBlock
      */
     public void setNextBlockId(int blockId)
     {
-        left = blockId;
+        nextB = blockId;
     }
 
     /**
@@ -89,7 +94,7 @@ public class SlottedBlock
      */
     public int getNextBlockId()
     {
-        return -1;
+        return nextB;
     }
 
     /**
@@ -98,7 +103,7 @@ public class SlottedBlock
      */
     public void setPrevBlockId(int blockId)
     {
-        right = blockId;
+        prevB = blockId;
     }
 
     /**
@@ -107,8 +112,7 @@ public class SlottedBlock
      */
     public int getPrevBlockId()
     {
-        return prevBlockID;
-        return -1;
+        return prevB;
     }
 
     /**
@@ -123,7 +127,15 @@ public class SlottedBlock
      */
     public int getAvailableSpace()
     {
-        return -1;
+        /*Teoricamente esto me tendria que dar el tamaño del intbuffer
+        por bloque, aunque hay una probabilidad (muy alta) de que para hacer eso
+        lo tenga que relacionar con el bloque, si no hace eso, entonces me devuelve
+        el tamaño total del intBuffer, la solucion creo que seria facil, seria revisar
+        como hacer que el intbuffer se relacione solo con un bloque a la vez y no todos los bloques
+        probar entonces no me preocupo hasta que tenga como corroboralo*/
+        intBufferLength = intBuffer.capacity();
+        byte[] lengthBytes = intBufferLength;
+        return lengthBytes;
     }
         
 
