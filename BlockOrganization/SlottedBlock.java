@@ -41,6 +41,7 @@ public class SlottedBlock
     private int blockId;
     private int nextB;
     private int prevB;
+    static Block root;
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -61,6 +62,7 @@ public class SlottedBlock
      */
     public void init()
     {
+      
     }
 
 
@@ -73,6 +75,7 @@ public class SlottedBlock
         //Tried doing it by creating a block called initialBlock, but that didnt work
         //static SlottedBlock initialBlock;
         //initialBlock = blockId;
+        this.blockId = blockId;  
     }
 
     /**
@@ -81,6 +84,7 @@ public class SlottedBlock
      */
     public int getBlockId()
     {
+        System.err.println(blockId);
         //I need to return blockId that much im certain off, however I need to first figure out how to set 
         //said block id
         //blockId = initialBlock.blockId();
@@ -111,7 +115,14 @@ public class SlottedBlock
      */
     public void setPrevBlockId(int blockId)
     {
-        prevB = blockId;
+        if (prevB == -1){
+            prevB = 0;
+            System.err.println(prevB);
+        }
+        else {
+            prevB = blockId;
+        }
+
     }
 
     /**
@@ -120,6 +131,12 @@ public class SlottedBlock
      */
     public int getPrevBlockId()
     {
+        //if (blockId == -1){
+       //     return 0;
+        //}
+        //else {
+        //    return prevB;
+        //}
         return prevB;
     }
 
@@ -240,6 +257,13 @@ public class SlottedBlock
      */
     public boolean empty()
     {
+        //The basic idea to what I should do 
+       // if () {
+        //    return true;
+       // }
+        //else{
+        //    return false;
+        //}
         return false;
     }
 }
