@@ -26,8 +26,7 @@ public class SPTester
             System.out.println("--- Test 1: Block Initialization Checks ---");
             sp.setBlockId(7);
             sp.setNextBlockId(8);
-            sp.setPrevBlockId(6);
-            //sp.setPrevBlockId(SlottedBlock.INVALID_BLOCK);
+            sp.setPrevBlockId(SlottedBlock.INVALID_BLOCK);
             
             System.out.println
                 ("Current Block No.: " + sp.getBlockId() + ", " +

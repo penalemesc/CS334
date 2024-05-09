@@ -35,13 +35,13 @@ public class SlottedBlock
     will not work, however the make file that we got to make it run doesnt work on this machine so idk what to do now!
     
     Yo creo que como arbol va a ser un poco más facíl porque ya de por si tengo una derecha que
-    puedo tratar como atras y una izquierda que puedo tratar como adelante
-    entonces en esta idea de implementacion de arbol, la izquierda seria el parametro nextB
-    y la derecha seria prevB*/
+    puedo tratar como adelante y una izquierda que puedo tratar como atras
+    entonces en esta idea de implementacion de arbol, la derecha seria el parametro nextB
+    y la izquierda seria prevB*/
     private int blockId;
     private int nextB;
     private int prevB;
-    static Block root;
+    //static Block root;
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -84,7 +84,6 @@ public class SlottedBlock
      */
     public int getBlockId()
     {
-        System.err.println(blockId);
         //I need to return blockId that much im certain off, however I need to first figure out how to set 
         //said block id
         //blockId = initialBlock.blockId();
@@ -115,14 +114,7 @@ public class SlottedBlock
      */
     public void setPrevBlockId(int blockId)
     {
-        if (prevB == -1){
-            prevB = 0;
-            System.err.println(prevB);
-        }
-        else {
-            prevB = blockId;
-        }
-
+        prevB = blockId;
     }
 
     /**
@@ -131,12 +123,6 @@ public class SlottedBlock
      */
     public int getPrevBlockId()
     {
-        //if (blockId == -1){
-       //     return 0;
-        //}
-        //else {
-        //    return prevB;
-        //}
         return prevB;
     }
 
@@ -152,18 +138,25 @@ public class SlottedBlock
      */
     public int getAvailableSpace()
     {
-        /*Teoricamente esto me tendria que dar el tamaño del intbuffer
-        por bloque, aunque hay una probabilidad (muy alta) de que para hacer eso
-        lo tenga que relacionar con el bloque, si no hace eso, entonces me devuelve
-        el tamaño total del intBuffer, la solucion creo que seria facil, seria revisar
-        como hacer que el intbuffer se relacione solo con un bloque a la vez y no todos los bloques
-        probar entonces no me preocupo hasta que tenga como corroboralo*/
-        /*intBufferLength = intBuffer.capacity();
-        byte[] lengthBytes = intBufferLength;
-        return lengthBytes;*/
-        return -1;
-        /*estaba en lo correcto, eso no anda pero creo que tan lejos no estoy */
+        int hayValor = 0;
+        int espacioLibre = 0;
 
+       for (int i = 0; i < intBufferLength; i++) {
+            //este if funciona si lo checkeo que este vacio primero pero es mejor asi porque hay mas espacios libres por ahora
+            if (intBuffer.get(i) != 0) {
+                hayValor += 1;
+            }
+        }
+        espacioLibre = (intBufferLength - hayValor) * SIZE_OF_INT;
+        // for (int i = 0; i < espacioLibre; i++){
+        //     freeSpace[i] = espacioLibre;
+        // }
+        //freeSpace = Byte.parseByte(String.valueOf(espacioLibre));
+        //System.out.println("Los espacios ocupados son: " + hayValor);
+        //System.out.println("Los espacios vacios son: " + estaVacio);
+        System.out.println("El espacio disponible es: " + espacioLibre);
+        //System.out.println("En bytes el espacio libre es: " + freeSpace);
+        return espacioLibre;
     }
         
 
@@ -187,6 +180,7 @@ public class SlottedBlock
     */
     public RID insertRecord(byte[] record)
     {
+        
         return null;
     }
 
@@ -207,6 +201,7 @@ public class SlottedBlock
     */
     public boolean deleteRecord(RID rid)
     {
+        // idea basica de lo que hay que hacer intBuffer[rid] = 0
         return false;
     }
 
@@ -258,12 +253,12 @@ public class SlottedBlock
     public boolean empty()
     {
         //The basic idea to what I should do 
-       // if () {
-        //    return true;
-       // }
-        //else{
-        //    return false;
-        //}
-        return false;
+        if (getAvailableSpace() == 1024) {
+          return true;
+        }
+        else{
+           return false;
+        }
+
     }
 }
