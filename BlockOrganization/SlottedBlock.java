@@ -62,10 +62,14 @@ public class SlottedBlock
      */
     public void init()
     {
-      blockId = getBlockId();
-      nextBlock = getNextBlockId();
-      prevBlock = getPrevBlockId();
-
+        //What this does is set the intBuffer so that the first 3 slots have the data of the block
+        //In other words, the first 12 bytes of @param data are for referencing the block
+      int blockId = getBlockId();
+      int nextBlock = getNextBlockId();
+      int prevBlock = getPrevBlockId();
+      intBuffer.put(0, blockId);
+      intBuffer.put(1, prevBlock);
+      intBuffer.put(2, nextBlock);
     }
 
 
@@ -158,7 +162,7 @@ public class SlottedBlock
         //System.out.println("Los espacios ocupados son: " + hayValor);
         //System.out.println("Los espacios vacios son: " + estaVacio);
         //System.out.println("El espacio disponible es: " + espacioLibre);
-        //System.out.println("En bytes el espacio libre es: " + freeSpace);
+        System.out.println("En bytes el espacio libre es: " + freeSpace);
         return freeSpace;
     }
         
@@ -192,10 +196,12 @@ public class SlottedBlock
         //The main question that I have is about the extra space how would we define that in here
         //More importantly is what is needed to insert the record into the array and in that case are we inserting 
         //the record into the intbuffer or into data?
-        System.arraycopy(record, 0, data, 0, SIZE_OF_INT);
+        
+        //System.arraycopy(record, 0, data, 0, SIZE_OF_INT);
         //RID is record ID
-        RID rid;
-        return rid;
+        //RID rid;
+        //return rid;
+        return null;
     }
 
     /**
