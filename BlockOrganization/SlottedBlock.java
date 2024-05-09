@@ -62,7 +62,10 @@ public class SlottedBlock
      */
     public void init()
     {
-      
+      blockId = getBlockId();
+      nextBlock = getNextBlockId();
+      prevBlock = getPrevBlockId();
+
     }
 
 
@@ -138,25 +141,25 @@ public class SlottedBlock
      */
     public int getAvailableSpace()
     {
-        int hayValor = 0;
-        int espacioLibre = 0;
-
-       for (int i = 0; i < intBufferLength; i++) {
+        //Do we need to create a new block if there is no space in the slot?
+        int hasValue = 0;
+        int freeSpace = 0;
+        for (int i = 0; i < intBufferLength; i++) {
             //este if funciona si lo checkeo que este vacio primero pero es mejor asi porque hay mas espacios libres por ahora
             if (intBuffer.get(i) != 0) {
-                hayValor += 1;
+                hasValue += 1;
             }
         }
-        espacioLibre = (intBufferLength - hayValor) * SIZE_OF_INT;
+        freeSpace = (intBufferLength - hasValue) * SIZE_OF_INT;
         // for (int i = 0; i < espacioLibre; i++){
         //     freeSpace[i] = espacioLibre;
         // }
         //freeSpace = Byte.parseByte(String.valueOf(espacioLibre));
         //System.out.println("Los espacios ocupados son: " + hayValor);
         //System.out.println("Los espacios vacios son: " + estaVacio);
-        System.out.println("El espacio disponible es: " + espacioLibre);
+        //System.out.println("El espacio disponible es: " + espacioLibre);
         //System.out.println("En bytes el espacio libre es: " + freeSpace);
-        return espacioLibre;
+        return freeSpace;
     }
         
 
@@ -180,8 +183,19 @@ public class SlottedBlock
     */
     public RID insertRecord(byte[] record)
     {
-        
-        return null;
+        //Idea de lo que hay que hacer es un intbuffer.put() como 3 veces, donde en el primero va la cantidad de records
+        //en la segunda va donde esta el record que pusimos y el tercero va el largo del record 
+        //Hay que repetir el segundo y el primero por cada record que hacemos 
+        //y para poner el record en si en el array, hay que empezar desde el final para atras o sea 
+        //el primer record va a ir del byte 1020 al 1023 (o el slot 255 si lo tratamos a cada slot como 4 bytes)
+
+        //The main question that I have is about the extra space how would we define that in here
+        //More importantly is what is needed to insert the record into the array and in that case are we inserting 
+        //the record into the intbuffer or into data?
+        System.arraycopy(record, 0, data, 0, SIZE_OF_INT);
+        //RID is record ID
+        RID rid;
+        return rid;
     }
 
     /**
@@ -201,7 +215,17 @@ public class SlottedBlock
     */
     public boolean deleteRecord(RID rid)
     {
+        //I dont understand what the method is supposed to do then, is this how we create the free space in the 
+        //block then? By deleting records?
+        //No sirve por todo lo que dice arriba
         // idea basica de lo que hay que hacer intBuffer[rid] = 0
+        // if (intBuffer.get(rid) == rid) {
+        //     intBuffer.put(0);
+        //     return true;
+        // }
+        // else {
+        //     return false;
+        // }
         return false;
     }
 
