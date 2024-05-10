@@ -64,12 +64,13 @@ public class SlottedBlock
     {
         //What this does is set the intBuffer so that the first 3 slots have the data of the block
         //In other words, the first 12 bytes of @param data are for referencing the block
-      int blockId = getBlockId();
-      int nextBlock = getNextBlockId();
-      int prevBlock = getPrevBlockId();
-      intBuffer.put(0, blockId);
-      intBuffer.put(1, prevBlock);
-      intBuffer.put(2, nextBlock);
+        blockId = getBlockId();
+        nextB = getNextBlockId();
+        prevB = getPrevBlockId();
+        intBuffer.put(0, blockId);
+        intBuffer.put(1, prevB);
+        intBuffer.put(2, nextB);
+        System.out.println("test " +intBuffer.get(2));
     }
 
 
@@ -155,14 +156,21 @@ public class SlottedBlock
             }
         }
         freeSpace = (intBufferLength - hasValue) * SIZE_OF_INT;
-        // for (int i = 0; i < espacioLibre; i++){
-        //     freeSpace[i] = espacioLibre;
+        // if (intBuffer.get() != 0) {
+        //         System.out.println("test " + intBuffer.get(i));
+        //         hasValue += 1;
+        //     }
+        // for (int i = 0; i < data.length; i++){
+        //     if (intBuffer.get() != 0) {
+        //         System.out.println("test " + intBuffer.get(i));
+        //         hasValue += 1;
+        //     }
         // }
         //freeSpace = Byte.parseByte(String.valueOf(espacioLibre));
         //System.out.println("Los espacios ocupados son: " + hayValor);
         //System.out.println("Los espacios vacios son: " + estaVacio);
         //System.out.println("El espacio disponible es: " + espacioLibre);
-        System.out.println("En bytes el espacio libre es: " + freeSpace);
+        //System.out.println("En bytes el espacio libre es: " + freeSpace);
         return freeSpace;
     }
         
@@ -196,12 +204,14 @@ public class SlottedBlock
         //The main question that I have is about the extra space how would we define that in here
         //More importantly is what is needed to insert the record into the array and in that case are we inserting 
         //the record into the intbuffer or into data?
-        
+        for (int i = 0; i < data.length; i ++){
+
+        }
         //System.arraycopy(record, 0, data, 0, SIZE_OF_INT);
         //RID is record ID
         //RID rid;
         //return rid;
-        return null;
+        // return null;
     }
 
     /**
