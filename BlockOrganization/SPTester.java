@@ -47,7 +47,7 @@ public class SPTester
     {
         public void test() throws Exception
         {
-            int buffSize = 20;
+            int buffSize = 4;
             int limit = 20;
             byte[] tmpBuf = new byte[buffSize];
 

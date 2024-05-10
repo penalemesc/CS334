@@ -70,7 +70,7 @@ public class SlottedBlock
         intBuffer.put(0, blockId);
         intBuffer.put(1, prevB);
         intBuffer.put(2, nextB);
-        System.out.println("test " +intBuffer.get(2));
+        //System.out.println("test " +intBuffer.get(2));
     }
 
 
@@ -149,6 +149,7 @@ public class SlottedBlock
         //Do we need to create a new block if there is no space in the slot?
         int hasValue = 0;
         int freeSpace = 0;
+        //Como hago para llegar al final? Porque el ultimo no lo puedo leer si lo hago con un <=
         for (int i = 0; i < intBufferLength; i++) {
             //este if funciona si lo checkeo que este vacio primero pero es mejor asi porque hay mas espacios libres por ahora
             if (intBuffer.get(i) != 0) {
@@ -204,14 +205,51 @@ public class SlottedBlock
         //The main question that I have is about the extra space how would we define that in here
         //More importantly is what is needed to insert the record into the array and in that case are we inserting 
         //the record into the intbuffer or into data?
-        for (int i = 0; i < data.length; i ++){
+        
+        //Hay que hacer un for que revise de atras para adelante
 
-        }
+        //aca el problema es que el arraycopy no esta metiendo nada al array de data
+        System.out.println("Esto es un test de poner el primer record en el array, al ya saber que vamos a empezar en el byte 1023");
+        System.arraycopy(record, 0, data, 1020, 4);
+        //algo en el array copy no copia como tiene que copiar porque lo siguiente anda como tendria que hacerlo
+        // data[1020] = 20;
+        // System.out.println(data[1020]);
+
+        
+        //System.out.println("Data in first position: " + data[1020] + " Data in second position: " + data[1021] + " third "+data[1022] + " fourth: " +data[1023]);
+        //la idea de esto es medio obvia, pero si no hay data entonces se puede usar como lugar para poner datos
+        //creo que con un while es mejor porque si canBeLocation es false entonces entra al loop si pasa a true
+        //sale del loop
+        boolean canBeHeaderLocation = false;
+        // for (int i = 0; i < data.length; i ++){
+        //     if (data[i] == 0){
+        //         canBeLocation = true;
+        //     }
+        //     if (canBeLocation == true) {
+
+        //     }
+        // }
+
+        //ESTO DE ABAJO ESTA EN PROCESO DE QUE ANDE
+
+        // int hLocationInIB;
+        // while (canBeHeaderLocation == false){
+        //     int i = -1;
+        //     if (data[i] == 0){
+        //         canBeHeaderLocation = true;
+        //         hLocationInIB = data[i];
+        //     }
+        //     i++;
+        // }
+        //Aca necesito otro que apunte a donde esta guardado el registro, entonces primero tengo 
+        //que guardar el registro en el array
+        //intBuffer.put(hLocationInIB, locationInI);
+
         //System.arraycopy(record, 0, data, 0, SIZE_OF_INT);
         //RID is record ID
         //RID rid;
         //return rid;
-        // return null;
+        return null;
     }
 
     /**
