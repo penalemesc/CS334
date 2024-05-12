@@ -44,9 +44,9 @@ public class SlottedBlock
     private int prevB;
 
     //And this is to set up the records in the block
-    private int nEntriesToWrite;
-    private int endOfArray;
-    private int recordsInBlock;
+    private int nEntriesToWrite;//Amount of things we are going to write to the block
+    private int endOfBlock;//end 
+    private int recordsInBlock;//Amount of things that are already in the block
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -77,7 +77,7 @@ public class SlottedBlock
         intBuffer.put(2, nextB);
         // System.out.println(intBuffer.get(2));
         //System.out.println("test " +intBuffer.get(2));
-        setEndOfArray(data.length-4);
+        setEndOfBlock(data.length-4);
     }
 
 
@@ -150,12 +150,12 @@ public class SlottedBlock
         return nEntriesToWrite;
     }
 
-    public void setEndOfArray(int endOfArray){
-        this.endOfArray = endOfArray;
+    public void setEndOfBlock(int endOfBlock){
+        this.endOfBlock = endOfBlock;
     }
 
-    public int getEndOfArray(){
-        return endOfArray;
+    public int getEndOfBlock(){
+        return endOfBlock;
     }
 
     private void setRecordsInBlock(int recordsInBlock){
@@ -248,26 +248,26 @@ public class SlottedBlock
         //Test to see if it actually puts it in: System.out.println("Entries " + intBuffer.get(0));
 
         if (rInBlock == 0) {
-            int endOfA = getEndOfArray();
+            int endOfB = getEndOfBlock();
             
-            System.arraycopy(record, 0, data, endOfA, 1);
-            setEndOfArray(endOfA - SIZE_OF_INT);
+            System.arraycopy(record, 0, data, endOfB, 1);
+            setEndOfBlock(endOfB - SIZE_OF_INT);
             //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
             //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-            intBuffer.put((4), endOfA);
+            intBuffer.put((4), endOfB);
             //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
             setRecordsInBlock(rInBlock+1);
             RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
             return rid;
         }
         else {
-            int endOfA = getEndOfArray();
+            int endOfB = getEndOfBlock();
             
-            System.arraycopy(record, 0, data, endOfA, 1);
-            setEndOfArray(endOfA - SIZE_OF_INT);
+            System.arraycopy(record, 0, data, endOfB, 1);
+            setEndOfBlock(endOfB - SIZE_OF_INT);
             //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
             //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-            intBuffer.put((4+rInBlock), endOfA);
+            intBuffer.put((4+rInBlock), endOfB);
             //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
             setRecordsInBlock(rInBlock+1);
 
@@ -306,12 +306,12 @@ public class SlottedBlock
         // int l = 1;
         // //i++ has to always be here otherwise it dont iterate
         // for (int i = 0; i <= (intBuffer.get(0)); i++){
-        //     int endOfA = getEndOfArray();
+        //     int endOfB = getEndOfBlock();
             
-        //     System.arraycopy(record, i, data, endOfA, 1);
-        //     setEndOfArray(endOfA - SIZE_OF_INT);
+        //     System.arraycopy(record, i, data, endOfB, 1);
+        //     setEndOfBlock(endOfB - SIZE_OF_INT);
         //     //No se bien que tengo que meter pero eso es lo que hay que hacer
-        //     intBuffer.put((p+i), endOfA);
+        //     intBuffer.put((p+i), endOfB);
         
         //     System.err.println(p+1);
         //     p++;
@@ -326,13 +326,13 @@ public class SlottedBlock
 
         TEST DE FOR LOOP PARA RECORDS:::
         for (int i = 0; i < (intBuffer.get(0)); i++){
-            int endOfA = getEndOfArray();
+            int endOfB = getEndOfBlock();
             
-            System.arraycopy(record, i, data, endOfA, 1);
-            setEndOfArray(endOfA - SIZE_OF_INT);
+            System.arraycopy(record, i, data, endOfB, 1);
+            setEndOfBlock(endOfB - SIZE_OF_INT);
             //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
             //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-            intBuffer.put((1+i), endOfA);
+            intBuffer.put((1+i), endOfB);
             //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
         }
 
