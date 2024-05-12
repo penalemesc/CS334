@@ -38,10 +38,15 @@ public class SlottedBlock
     puedo tratar como adelante y una izquierda que puedo tratar como atras
     entonces en esta idea de implementacion de arbol, la derecha seria el parametro nextB
     y la izquierda seria prevB*/
+    //This is to set up the block
     private int blockId;
     private int nextB;
     private int prevB;
-    //static Block root;
+
+    //And this is to set up the records in the block
+    private int nEntriesToWrite;
+    private int endOfArray;
+    private int recordsInBlock;
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -70,7 +75,9 @@ public class SlottedBlock
         intBuffer.put(0, blockId);
         intBuffer.put(1, prevB);
         intBuffer.put(2, nextB);
+        // System.out.println(intBuffer.get(2));
         //System.out.println("test " +intBuffer.get(2));
+        setEndOfArray(data.length-4);
     }
 
 
@@ -132,6 +139,31 @@ public class SlottedBlock
     public int getPrevBlockId()
     {
         return prevB;
+    }
+
+
+    public void setNEntriesToWrite(int nEntriesToWrite){
+        this.nEntriesToWrite = nEntriesToWrite;
+    }
+
+    public int getNEntriesToWrite(){
+        return nEntriesToWrite;
+    }
+
+    public void setEndOfArray(int endOfArray){
+        this.endOfArray = endOfArray;
+    }
+
+    public int getEndOfArray(){
+        return endOfArray;
+    }
+
+    private void setRecordsInBlock(int recordsInBlock){
+        this.recordsInBlock = recordsInBlock;
+    }
+
+    public int getRecodsInBlock(){
+        return recordsInBlock;
     }
 
     /**
@@ -208,39 +240,135 @@ public class SlottedBlock
         
         //Hay que hacer un for que revise de atras para adelante
 
-        //aca el problema es que el arraycopy no esta metiendo nada al array de data
-        System.out.println("Esto es un test de poner el primer record en el array, al ya saber que vamos a empezar en el byte 1023");
-        System.arraycopy(record, 0, data, 1020, 4);
+        //This puts the amount of entries in the header
+        setNEntriesToWrite(record.length);
+        int entries = getNEntriesToWrite();
+        intBuffer.put(3, entries);
+        int rInBlock = getRecodsInBlock();
+        //Test to see if it actually puts it in: System.out.println("Entries " + intBuffer.get(0));
+
+        if (rInBlock == 0) {
+            int endOfA = getEndOfArray();
+            
+            System.arraycopy(record, 0, data, endOfA, 1);
+            setEndOfArray(endOfA - SIZE_OF_INT);
+            //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+            //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+            intBuffer.put((4), endOfA);
+            //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+            setRecordsInBlock(rInBlock+1);
+            RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
+            return rid;
+        }
+        else {
+            int endOfA = getEndOfArray();
+            
+            System.arraycopy(record, 0, data, endOfA, 1);
+            setEndOfArray(endOfA - SIZE_OF_INT);
+            //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+            //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+            intBuffer.put((4+rInBlock), endOfA);
+            //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+            setRecordsInBlock(rInBlock+1);
+
+            RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
+            return rid;
+        }
+        
+
+        //i++ has to always be here otherwise it dont iterate
+        
+        
+        /*Esto son pruebas que no hacen lo que estamos buscando
+        /aca el problema es que el arraycopy no esta metiendo nada al array de data
+        //System.out.println("Esto es un test de poner el primer record en el array, al ya saber que vamos a empezar en el byte 1023");
+        //System.arraycopy(record, 0, data, 1020, 4);
         //algo en el array copy no copia como tiene que copiar porque lo siguiente anda como tendria que hacerlo
         // data[1020] = 20;
         // System.out.println(data[1020]);
-
+        // blockId = getBlockId();
+        // nextB = getNextBlockId();
+        // prevB = getPrevBlockId();
+        // intBuffer.put(0, blockId);
+        // intBuffer.put(1, prevB);
+        // intBuffer.put(2, nextB);
+        // intBuffer.get(0);
+        // intBuffer.get(1);
+        // intBuffer.get(2);
         
         //System.out.println("Data in first position: " + data[1020] + " Data in second position: " + data[1021] + " third "+data[1022] + " fourth: " +data[1023]);
         //la idea de esto es medio obvia, pero si no hay data entonces se puede usar como lugar para poner datos
         //creo que con un while es mejor porque si canBeLocation es false entonces entra al loop si pasa a true
         //sale del loop
+        //RID rid = 1;
+
+            // int p = 0;
+        // int l = 1;
+        // //i++ has to always be here otherwise it dont iterate
+        // for (int i = 0; i <= (intBuffer.get(0)); i++){
+        //     int endOfA = getEndOfArray();
+            
+        //     System.arraycopy(record, i, data, endOfA, 1);
+        //     setEndOfArray(endOfA - SIZE_OF_INT);
+        //     //No se bien que tengo que meter pero eso es lo que hay que hacer
+        //     intBuffer.put((p+i), endOfA);
+        
+        //     System.err.println(p+1);
+        //     p++;
+        //     intBuffer.put((1+l), SIZE_OF_INT);
+        //     System.err.println(1+l);
+        //     l++;
+            
+        //     //test
+        //     System.out.println("Test of iB: " + intBuffer.get(i));
+        // }
+      
+
+        TEST DE FOR LOOP PARA RECORDS:::
+        for (int i = 0; i < (intBuffer.get(0)); i++){
+            int endOfA = getEndOfArray();
+            
+            System.arraycopy(record, i, data, endOfA, 1);
+            setEndOfArray(endOfA - SIZE_OF_INT);
+            //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+            //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+            intBuffer.put((1+i), endOfA);
+            //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+        }
+
+
+
+
+
+
+
+
+
+        // int Irid = 1;
+        // intBuffer.put(255, Irid);
+        // System.out.println(intBuffer.get(255));
+        
+        //System.arraycopy(record, Irid, record, Irid, Irid);
         boolean canBeHeaderLocation = false;
-        // for (int i = 0; i < data.length; i ++){
-        //     if (data[i] == 0){
-        //         canBeLocation = true;
-        //     }
-        //     if (canBeLocation == true) {
+        int hLocationInIB;
+        while (canBeHeaderLocation == false){
+             
+             for (int i = 0; i < data.length; i++){
+                if (data[i] == 0){
+                    canBeHeaderLocation = true;
+                    hLocationInIB = data[i];
+                    break;
+                }
+            }
+            // if (canBeHeaderLocation == true) {
+            //         intBuffer.put(hLocationInIB, data[i]);
+            //         System.arraycopy(record, Irid, record, hLocationInIB, i);
+            //     }
 
-        //     }
-        // }
+            
+             
+        }*/
 
-        //ESTO DE ABAJO ESTA EN PROCESO DE QUE ANDE
-
-        // int hLocationInIB;
-        // while (canBeHeaderLocation == false){
-        //     int i = -1;
-        //     if (data[i] == 0){
-        //         canBeHeaderLocation = true;
-        //         hLocationInIB = data[i];
-        //     }
-        //     i++;
-        // }
         //Aca necesito otro que apunte a donde esta guardado el registro, entonces primero tengo 
         //que guardar el registro en el array
         //intBuffer.put(hLocationInIB, locationInI);
@@ -249,7 +377,7 @@ public class SlottedBlock
         //RID is record ID
         //RID rid;
         //return rid;
-        return null;
+
     }
 
     /**
@@ -331,7 +459,7 @@ public class SlottedBlock
     public boolean empty()
     {
         //The basic idea to what I should do 
-        if (getAvailableSpace() == 1024) {
+        if (getAvailableSpace() == data.length) {
           return true;
         }
         else{
