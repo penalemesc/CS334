@@ -236,7 +236,7 @@ public class SlottedBlock
 
         //The main question that I have is about the extra space how would we define that in here
         //More importantly is what is needed to insert the record into the array and in that case are we inserting 
-        //the record into the intbuffer or into data?
+        //the record into the intbuffer or into data? SOLVED
         
         //Hay que hacer un for que revise de atras para adelante
 
@@ -246,40 +246,45 @@ public class SlottedBlock
         intBuffer.put(3, entries);
         int rInBlock = getRecodsInBlock();
         //Test to see if it actually puts it in: System.out.println("Entries " + intBuffer.get(0));
-
-        if (rInBlock == 0) {
-            int endOfB = getEndOfBlock();
-            
-            System.arraycopy(record, 0, data, endOfB, 1);
-            setEndOfBlock(endOfB - SIZE_OF_INT);
-            //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
-            //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-            intBuffer.put((4), endOfB);
-            //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
-            setRecordsInBlock(rInBlock+1);
-            RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
-            return rid;
+        try {
+            if (rInBlock == 0) {
+                int endOfB = getEndOfBlock();
+                
+                System.arraycopy(record, 0, data, endOfB, 1);
+                setEndOfBlock(endOfB - SIZE_OF_INT);
+                //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+                //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+                intBuffer.put((4), endOfB);
+                //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+                setRecordsInBlock(rInBlock+1);
+                RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
+                return rid;
+            }
+            else {
+                int endOfB = getEndOfBlock();
+                
+                System.arraycopy(record, 0, data, endOfB, 1);
+                setEndOfBlock(endOfB - SIZE_OF_INT);
+                //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+                //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+                intBuffer.put((4+rInBlock), endOfB);
+                //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+                setRecordsInBlock(rInBlock+1);
+                RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
+                //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
+                return rid;
+                
+            }
+        } 
+        catch (BlockFullException bFE) {
+            //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
+            System.err.println("The block is full");
+            return null;
         }
-        else {
-            int endOfB = getEndOfBlock();
-            
-            System.arraycopy(record, 0, data, endOfB, 1);
-            setEndOfBlock(endOfB - SIZE_OF_INT);
-            //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
-            //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-            intBuffer.put((4+rInBlock), endOfB);
-            //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
-            setRecordsInBlock(rInBlock+1);
-
-            RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
-            return rid;
-        }
         
 
-        //i++ has to always be here otherwise it dont iterate
         
-        
-        /*Esto son pruebas que no hacen lo que estamos buscando
+        /*Here are the many tests I had to do in order to get the code to work
         /aca el problema es que el arraycopy no esta metiendo nada al array de data
         //System.out.println("Esto es un test de poner el primer record en el array, al ya saber que vamos a empezar en el byte 1023");
         //System.arraycopy(record, 0, data, 1020, 4);
@@ -366,10 +371,7 @@ public class SlottedBlock
             //     }
 
             
-             
-        }*/
-
-        //Aca necesito otro que apunte a donde esta guardado el registro, entonces primero tengo 
+              //Aca necesito otro que apunte a donde esta guardado el registro, entonces primero tengo 
         //que guardar el registro en el array
         //intBuffer.put(hLocationInIB, locationInI);
 
@@ -377,6 +379,7 @@ public class SlottedBlock
         //RID is record ID
         //RID rid;
         //return rid;
+        }*/
 
     }
 
@@ -419,7 +422,24 @@ public class SlottedBlock
      */
     public RID firstRecord()
     {
-        return null;
+        
+        if (empty() == true){
+            return null;
+        }
+        else {
+            int firstRecordPosition = 0;
+            for (int i = 0; i < data.length; i++){
+                //System.out.println("Se metio en el loop");
+                //El if esta mal tengo que ver bien donde estoy igualando las cosas
+                if (intBuffer.get(i) == data.length-4){
+                    firstRecordPosition = i;
+                    break;
+                }
+            }
+            RID fRID = new RID(intBuffer.get(0), intBuffer.get(firstRecordPosition));
+            return fRID;
+        }
+        //return fRID;
     }
 
     /**
