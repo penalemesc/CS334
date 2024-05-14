@@ -47,7 +47,7 @@ public class SlottedBlock
     private int nEntriesToWrite;//Amount of things we are going to write to the block
     private int endOfBlock;//end 
     private int recordsInBlock;//Amount of things that are already in the block
-    private int recordsChecked;//records that we have been through for the function nextRID()
+    //Not used: private int recordsChecked;//records that we have been through for the function nextRID()
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -167,13 +167,13 @@ public class SlottedBlock
         return recordsInBlock;
     }
 
-    private void setRecordsChecked(int recordsChecked){
-        this.recordsChecked = recordsChecked;
-    }
-
-    public int getRecodsChecked(){
-        return recordsChecked;
-    }
+    //Didnt need these
+    // private void setRecordsChecked(int recordsChecked){
+    //     this.recordsChecked = recordsChecked;
+    // }
+    // public int getRecodsChecked(){
+    //     return recordsChecked;
+    // }
 
     /**
      * Determines how much space, in bytes, is actually available in the block,
@@ -513,10 +513,9 @@ public class SlottedBlock
             if (cSlotNum+1 <= data.length/SIZE_OF_INT ){
                 RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);
                 //Este if no me gusta mucho porque me parece que me trae problemas con otras funciones pero bueno
-                //Lo voy a descubrir en la parte 3 del ejercicio, por ahora sirve 
+                //Lo voy a descubrir en la parte 3 del ejercicio, por ahora sirve
+                //I think I accidently did the null part --I did
                 if (intBuffer.get(cSlotNum) <= rInBlock){
-                    //System.out.println("revienta");
-                    
                     return null;
                     //return nextRID;
                 }
