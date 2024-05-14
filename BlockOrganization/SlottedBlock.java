@@ -47,6 +47,7 @@ public class SlottedBlock
     private int nEntriesToWrite;//Amount of things we are going to write to the block
     private int endOfBlock;//end 
     private int recordsInBlock;//Amount of things that are already in the block
+    private int recordsChecked;//records that we have been through for the function nextRID()
 
     /**
      * Constructs a slotted block by wrapping around a block object already
@@ -77,7 +78,7 @@ public class SlottedBlock
         intBuffer.put(2, nextB);
         // System.out.println(intBuffer.get(2));
         //System.out.println("test " +intBuffer.get(2));
-        setEndOfBlock(data.length-4);
+        setEndOfBlock(data.length-SIZE_OF_INT);
     }
 
 
@@ -164,6 +165,14 @@ public class SlottedBlock
 
     public int getRecodsInBlock(){
         return recordsInBlock;
+    }
+
+    private void setRecordsChecked(int recordsChecked){
+        this.recordsChecked = recordsChecked;
+    }
+
+    public int getRecodsChecked(){
+        return recordsChecked;
     }
 
     /**
@@ -257,7 +266,8 @@ public class SlottedBlock
                 intBuffer.put((4), endOfB);
                 //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
                 setRecordsInBlock(rInBlock+1);
-                RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
+                //RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
+                RID rid = new RID(intBuffer.get(0), 4);
                 return rid;
             }
             else {
@@ -270,8 +280,10 @@ public class SlottedBlock
                 intBuffer.put((4+rInBlock), endOfB);
                 //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
                 setRecordsInBlock(rInBlock+1);
-                RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
+                //RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
+                RID rid = new RID(intBuffer.get(0), (4+rInBlock));
                 //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
+                //System.out.println("Records in block: " + rInBlock);
                 return rid;
                 
             }
@@ -422,24 +434,31 @@ public class SlottedBlock
      */
     public RID firstRecord()
     {
-        
         if (empty() == true){
             return null;
         }
         else {
             int firstRecordPosition = 0;
-            for (int i = 0; i < data.length; i++){
+            
+            for (int i = 0; i < data.length/SIZE_OF_INT && intBuffer.get(i) != data.length/SIZE_OF_INT; i++){
+                //System.out.println("IntBuffer.get(i): " + intBuffer.get(i));
                 //System.out.println("Se metio en el loop");
-                //El if esta mal tengo que ver bien donde estoy igualando las cosas
-                if (intBuffer.get(i) == data.length-4){
+                //--SOLUCIONADO: El if esta mal tengo que ver bien donde estoy igualando las cosas --SOLUCIONADO
+                //Antes habia un - aca en vez de un /
+                
+                //System.out.println(data.length/SIZE_OF_INT);
+                if (intBuffer.get(i) == data.length-SIZE_OF_INT){
+                    //System.out.println("Se metio en el if");
                     firstRecordPosition = i;
+                    //System.out.println("Primera posicion: " + firstRecordPosition);
                     break;
                 }
             }
-            RID fRID = new RID(intBuffer.get(0), intBuffer.get(firstRecordPosition));
+            //fRID is short for first RID
+            //RID fRID = new RID(intBuffer.get(0), intBuffer.get(firstRecordPosition));
+            RID fRID = new RID(intBuffer.get(0), firstRecordPosition);
             return fRID;
         }
-        //return fRID;
     }
 
     /**
@@ -455,6 +474,71 @@ public class SlottedBlock
     */
     public RID nextRecord(RID curRid)
     {
+        try {
+            //System.out.println("dataLength: " + data.length);
+            //System.out.println("SlotNum: " +curRid.slotNum);
+            //System.out.println("NextSlotNum: " +intBuffer.get(curRid.slotNum));
+            //int cSlotNum = intBuffer.get(curRid.slotNum);
+
+            int cSlotNum = curRid.slotNum;
+            //int nextSlotNum = cSlotNum+1;
+            //int recordsChecked = getRecodsChecked();
+
+            // if (intBuffer.get(cSlotNum) <= data.length-SIZE_OF_INT){
+            //     RID nextRID = new RID(intBuffer.get(0), intBuffer.get(cSlotNum));
+            //     return nextRID;
+            // }
+
+            int rInBlock = getRecodsInBlock();
+            
+            // if (cSlotNum+1 <= data.length/SIZE_OF_INT && cSlotNum <= rInBlock){
+            //     RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);
+            //     // System.out.println("");
+            //     // System.out.println("Next id: " + nextRID.slotNum);
+            //
+            //     return nextRID;
+            // }
+
+            //&& recordsChecked <= rInBlock
+            // if (cSlotNum+1 <= data.length/SIZE_OF_INT && cSlotNum+1 <= rInBlock){
+            //     RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);   
+            //     System.out.println("recordsChecked: " + recordsChecked);
+            //     System.out.println("cSLotNum: " + nextSlotNum);
+            //     // System.out.println("Records checked: " + recordsChecked);
+            //     // setRecordsChecked(recordsChecked+1);
+            //     // System.out.println("");
+            //     // System.out.println("Next id: " + nextRID.slotNum); 
+            //     return nextRID;
+            // }
+            if (cSlotNum+1 <= data.length/SIZE_OF_INT ){
+                RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);
+                //Este if no me gusta mucho porque me parece que me trae problemas con otras funciones pero bueno
+                //Lo voy a descubrir en la parte 3 del ejercicio, por ahora sirve 
+                if (intBuffer.get(cSlotNum) <= rInBlock){
+                    //System.out.println("revienta");
+                    
+                    return null;
+                    //return nextRID;
+                }
+                // System.out.println("recordsChecked: " + recordsChecked);
+                // System.out.println("cSLotNum: " + nextSlotNum);
+                // System.out.println("Records checked: " + recordsChecked);
+                // setRecordsChecked(recordsChecked+1);
+                // System.out.println("");
+                // System.out.println("Next id: " + nextRID.slotNum);
+               
+                return nextRID;
+            }
+            
+        } 
+        
+        catch (BadBlockIdException bBIE) {
+            System.err.println("The block ID provided is not valid");
+            return null;
+        } catch (BadSlotIdException bSIE) {
+            System.err.println("The slot ID provided is not valid");
+            return null;
+        }
         return null;
     }
 
