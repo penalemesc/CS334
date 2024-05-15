@@ -47,6 +47,8 @@ public class SlottedBlock
     private int nEntriesToWrite;//Amount of things we are going to write to the block
     private int endOfBlock;//end 
     private int recordsInBlock;//Amount of things that are already in the block
+    private int lastRecordInBlock;
+    private RID tempRecord;//meant to be used in deleting a record as a temporary record for the cases where the record we want to delete is not the first one 
     //Not used: private int recordsChecked;//records that we have been through for the function nextRID()
 
     /**
@@ -142,7 +144,6 @@ public class SlottedBlock
         return prevB;
     }
 
-
     public void setNEntriesToWrite(int nEntriesToWrite){
         this.nEntriesToWrite = nEntriesToWrite;
     }
@@ -159,15 +160,76 @@ public class SlottedBlock
         return endOfBlock;
     }
 
-    private void setRecordsInBlock(int recordsInBlock){
+    public void setRecordsInBlock(int recordsInBlock){
         this.recordsInBlock = recordsInBlock;
     }
 
-    public int getRecodsInBlock(){
+    public int getRecordsInBlock(){
         return recordsInBlock;
     }
 
+    public void setLastRecordInBlock(int lastRecordInBlock){
+        this.lastRecordInBlock = lastRecordInBlock;
+    }
+
+    public int getLastRecordInBlock(){
+        return lastRecordInBlock;
+    }
+
+    public void setTempRecord(RID tempRecord){
+        this.tempRecord = tempRecord;
+    }
+    public RID getTempRecord(){
+        return tempRecord;
+    }
+
+    /**
+     * Determines whether the record we are looking for is in the block
+     * @param rid
+     * @return true if the record is in the block, false if 
+     * the record is not in the block
+     */
+    public int findRecord(RID rid){
+        recordsInBlock = getRecordsInBlock();
+        boolean recordExists = false;
+        int recordsChecked = 0;
+        int recordToDelete;
+        for (int i = 4; i < data.length/SIZE_OF_INT && recordsChecked <= recordsInBlock; i++){
+            //System.out.println("intbufferget: " + intBuffer.get(i));
+            //System.out.println("slotnum: " + rid.slotNum);
+
+            if (intBuffer.get(rid.slotNum) == intBuffer.get(i)){
+                //System.out.println("RECORD FOUND");
+                //System.out.println("Records checked: " + recordsChecked);
+                //System.out.println("");
+                recordsChecked++;
+                recordExists = true;
+                break;
+            }
+            else{
+                //System.out.println("Record not found");
+                //System.out.println("Records checked: " + recordsChecked);
+                recordsChecked++;
+                recordExists = false;
+            }
+        }
+        if (recordExists == true){
+            recordToDelete = intBuffer.get(rid.slotNum);
+        }
+        else {
+            recordToDelete = -1;
+        }
+        //System.out.println("Record exists? " +recordExists);
+        return recordToDelete;
+    }    
+
     //Didnt need these
+    // public void setTempRecord(RID tempRecord){
+    //     this.tempRecord = tempRecord;
+    // }
+    // public RID getTempRecord(){
+    //     return tempRecord;
+    // }
     // private void setRecordsChecked(int recordsChecked){
     //     this.recordsChecked = recordsChecked;
     // }
@@ -251,14 +313,14 @@ public class SlottedBlock
 
         //This puts the amount of entries in the header
         setNEntriesToWrite(record.length);
-        int entries = getNEntriesToWrite();
-        intBuffer.put(3, entries);
-        int rInBlock = getRecodsInBlock();
+        int entriesToWrite = getNEntriesToWrite();
+        intBuffer.put(3, entriesToWrite);
+        int rInBlock = getRecordsInBlock();
+        int endOfB = getEndOfBlock();
+        int lastRecordInBlock;
         //Test to see if it actually puts it in: System.out.println("Entries " + intBuffer.get(0));
         try {
             if (rInBlock == 0) {
-                int endOfB = getEndOfBlock();
-                
                 System.arraycopy(record, 0, data, endOfB, 1);
                 setEndOfBlock(endOfB - SIZE_OF_INT);
                 //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
@@ -266,20 +328,30 @@ public class SlottedBlock
                 intBuffer.put((4), endOfB);
                 //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
                 setRecordsInBlock(rInBlock+1);
+                rInBlock = getRecordsInBlock();
                 //RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
                 RID rid = new RID(intBuffer.get(0), 4);
+                if (rInBlock == entriesToWrite){
+                    //System.out.println("Se mete al if del primero" + rInBlock);
+                    setLastRecordInBlock(intBuffer.get(4));
+                }
                 return rid;
             }
             else {
-                int endOfB = getEndOfBlock();
-                
                 System.arraycopy(record, 0, data, endOfB, 1);
                 setEndOfBlock(endOfB - SIZE_OF_INT);
                 //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
                 //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
                 intBuffer.put((4+rInBlock), endOfB);
                 //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+                
                 setRecordsInBlock(rInBlock+1);
+                lastRecordInBlock =  getRecordsInBlock();
+
+                if (lastRecordInBlock == entriesToWrite){
+                    setLastRecordInBlock(intBuffer.get(4+rInBlock));
+                    //System.out.println("Last record is: " + getLastRecordInBlock());
+                }
                 //RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
                 RID rid = new RID(intBuffer.get(0), (4+rInBlock));
                 //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
@@ -293,9 +365,6 @@ public class SlottedBlock
             System.err.println("The block is full");
             return null;
         }
-        
-
-        
         /*Here are the many tests I had to do in order to get the code to work
         /aca el problema es que el arraycopy no esta metiendo nada al array de data
         //System.out.println("Esto es un test de poner el primer record en el array, al ya saber que vamos a empezar en el byte 1023");
@@ -392,7 +461,6 @@ public class SlottedBlock
         //RID rid;
         //return rid;
         }*/
-
     }
 
     /**
@@ -423,7 +491,187 @@ public class SlottedBlock
         // else {
         //     return false;
         // }
-        return false;
+        // for (RID recordID : intBuffer.get(rid)){
+        //     if (recordID == rid){
+        //         return true;
+        //     }
+        //     else {
+        //         return false;
+        //     }
+        // }
+        //recordsInBlock = getRecordsInBlock();
+        //SlottedBlock sp = new SlottedBlock(new Block());
+        //
+        //
+        //Esto borra todo del bloque, o sea que tiene que ser sin un for 
+        // for (int i = 0; i < data.length/SIZE_OF_INT && intBuffer.get(i) != data.length/SIZE_OF_INT; i++){
+        //     //System.out.println("Se mete al for!");
+        //     RID firstRecord = firstRecord();
+        //     if (firstRecord.blockId == rid.blockId && firstRecord.slotNum == rid.slotNum){
+        //         //System.out.println("Se mete al if!");
+        //         intBuffer.put(firstRecord.slotNum, 0);
+        //         //I dont think I need to change anything in the array itself 
+        //         setRecordsInBlock(recordsInBlock-1);
+        //         System.out.println("Records left in block "+recordsInBlock);
+        //         return true;
+        //     }
+        //     //Puede ser que no necesite esto --SI LO NECESITAMOS PERO QUE ANDE BIEN NECESITAMOS
+        //     else if (firstRecord.blockId != rid.blockId && firstRecord.slotNum != rid.slotNum){ 
+        //         System.out.println("Se mete en el else if: ");
+        //         System.out.println("");
+        //         firstRecord = sp.nextRecord(rid);
+        //         if (firstRecord.slotNum == rid.slotNum){
+        //             System.out.println("Se mete en el if del else if:");
+        //             //System.out.println("Se mete al if!");
+        //             intBuffer.put(firstRecord.slotNum, 0);
+        //             //I dont think I need to change anything in the array itself 
+        //             setRecordsInBlock(recordsInBlock-1);
+        //             System.out.println("Records left in block "+recordsInBlock);
+        //             return true;
+        //         }
+        //     }
+        //     else{
+        //         System.out.println("Records left in block (else version): " + recordsInBlock);
+        //         return false;
+        //     }
+        // }
+        //}
+        //
+        //
+        //
+        //El if tiene que ser con intBuffer.get(slotId) donde se supone que eso tiene que devolver en donde esta guardado el record
+        //entonces si eso es igual a getLastRecordInBlock() entonces ahi hago lo del pedo psicologico de mover todo
+        // RID firstRecord = firstRecord();
+        //     if (firstRecord.blockId == rid.blockId && firstRecord.slotNum == rid.slotNum){
+        //         System.out.println("Primer record: " + firstRecord.slotNum);
+        //         System.out.println("");
+        //         //System.out.println("Se mete al if!");
+        //         intBuffer.put(firstRecord.slotNum, 0);
+        //         //I dont think I need to change anything in the array itself 
+        //         setRecordsInBlock(recordsInBlock-1);
+        //         //System.out.println("Se metio al primero!");
+        //         System.out.println("Records left in block "+recordsInBlock);
+        //         return true;
+        //     }
+        //     //Puede ser que no necesite esto --SI LO NECESITAMOS PERO QUE ANDE BIEN NECESITAMOS
+        //     else if (firstRecord.slotNum != rid.slotNum){ 
+        //         System.out.println("Se mete en el else if: ");        
+        //         firstRecord = sp.nextRecord(rid);
+        //         System.out.println("Next record to kill: " + firstRecord.slotNum);
+        //         System.out.println("");
+        //         //Lo de abajo no interesa
+        //         // if (firstRecord.slotNum == rid.slotNum){
+        //         //     System.out.println("Se mete en el if del else if:");
+        //         //     //System.out.println("Se mete al if!");
+        //         //     intBuffer.put(firstRecord.slotNum, 0);
+        //         //     //I dont think I need to change anything in the array itself 
+        //         //     setRecordsInBlock(recordsInBlock-1);
+        //         //     System.out.println("Records left in block "+recordsInBlock);
+        //         //     return true;
+        //         // }
+        //     }
+        //     else{
+        //         System.out.println("Records left in block (else version): " + recordsInBlock);
+        //         return false;
+        //     }
+        //
+        //
+        // recordsInBlock = getRecordsInBlock();
+        // RID firstRecord = firstRecord();
+        // try {
+        //     setTempRecord(nextRecord(rid));
+        // } catch (Exception e) {
+        //     setTempRecord(nextRecord(0));
+        //     System.err.println();
+        // }
+        // tempRecord = getTempRecord();
+        // if (firstRecord.blockId == rid.blockId && firstRecord.slotNum == rid.slotNum){
+        //     //System.out.println("Primer record: " + firstRecord.slotNum);
+        //     //System.out.println("");
+        //     //System.out.println("Se mete al if!");
+        //     intBuffer.put(firstRecord.slotNum, 0);
+        //     //I dont think I need to change anything in the array itself 
+        //     setRecordsInBlock(recordsInBlock-1);
+        //     //System.out.println("Se metio al primero!");
+        //     //System.out.println("Records left in block "+ getRecordsInBlock());
+        //     //setTempRecord(nextRecord(rid));
+        //     return true;
+        // }
+        // else if (tempRecord.slotNum != rid.slotNum){ 
+        //     //System.out.println("Se mete en el else if: ");   
+        //     setTempRecord(nextRecord(tempRecord));
+        //     setRecordsInBlock(recordsInBlock-1);
+        //     // System.out.println("Next record to kill: " + tempRecord.slotNum);
+        //     // System.out.println("Records left: " + getRecordsInBlock());            
+        // }
+        // // else if (tempRecord.slotNum == rid.slotNum){ 
+        // //     //System.out.println("Se mete en el else if: ");   
+        // //     setTempRecord(nextRecord(tempRecord));
+        // //     setRecordsInBlock(recordsInBlock-1);
+        // //     intBuffer.put(tempRecord.slotNum, 0);
+        // //     return true;
+        // //     // System.out.println("Next record to kill: " + tempRecord.slotNum);
+        // //     // System.out.println("Records left: " + getRecordsInBlock());            
+        // // }
+        // else{
+        //     //System.out.println("Records left in block (else version): " + getRecordsInBlock());
+        //     return false;
+        // } 
+        recordsInBlock = getRecordsInBlock();
+        boolean recordDeleted = false;
+        //findRecord(rid) == intBuffer.get(i)
+        //&& recordDeleted != true
+        //rid.slotNum != 0
+        
+        for (int i = 0; i < data.length/SIZE_OF_INT && i >= 4; i++){
+            //No entiendo esto, si es distinto que lo borra y si no no lo borra
+            //Corte funciona, ergo si no existe el 
+            if (findRecord(rid) != intBuffer.get(i)){
+                // System.out.println("SlotNum " + rid.slotNum);
+                // System.out.println("i " + intBuffer.get(i));
+                //System.out.println("getslotnum " + intBuffer.get(rid.slotNum));
+                //System.out.println("Se mete en " + intBuffer.get(i));
+                //intBuffer.put(intBuffer.get(rid.slotNum), 0);
+                //System.out.println(intBuffer.get(rid.slotNum));
+                intBuffer.put(i);
+                //System.out.println("ibp " + intBuffer.get(rid.slotNum));
+                //recordsInBlock = getRecordsInBlock();
+                //System.out.println("get de 4 " + intBuffer.get(4));
+                recordDeleted = true;
+                break;
+            }   
+            else {
+                //System.out.println("Else");
+                recordDeleted = false;
+                break;
+            }
+        }
+        // int i = 0;
+        // while (i < data.length/SIZE_OF_INT){
+        //     if (findRecord(rid) == intBuffer.get(i)){
+        //         System.out.println("Find records " + findRecord(rid));
+        //         System.out.println("SlotNum " + rid.slotNum);
+        //         System.out.println("i " + i);
+        //         //System.out.println("getslotnum " + intBuffer.get(rid.slotNum));
+        //         //System.out.println("Se mete en " + intBuffer.get(i));
+        //         //intBuffer.put(intBuffer.get(rid.slotNum), 0);
+        //         //System.out.println(intBuffer.get(rid.slotNum));
+        //         intBuffer.put(rid.slotNum, 0);
+        //         //System.out.println("ibp " + intBuffer.get(rid.slotNum));        
+        //         //recordsInBlock = getRecordsInBlock();        
+        //         //System.out.println("get de 4 " + intBuffer.get(4));
+        //         recordDeleted = true;
+        //         break;
+        //     }
+        //     i++;
+        // }
+        
+        if (recordDeleted == true){
+                setRecordsInBlock(recordsInBlock-1);
+                intBuffer.put(3, recordsInBlock);
+                //System.out.println("records in block: " + intBuffer.get(3));
+        }
+        return recordDeleted;
     }
 
     /**
@@ -489,7 +737,7 @@ public class SlottedBlock
             //     return nextRID;
             // }
 
-            int rInBlock = getRecodsInBlock();
+            int rInBlock = getRecordsInBlock();
             
             // if (cSlotNum+1 <= data.length/SIZE_OF_INT && cSlotNum <= rInBlock){
             //     RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);
@@ -510,22 +758,24 @@ public class SlottedBlock
             //     // System.out.println("Next id: " + nextRID.slotNum); 
             //     return nextRID;
             // }
-            if (cSlotNum+1 <= data.length/SIZE_OF_INT ){
-                RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);
+            if (cSlotNum+1 <= data.length/SIZE_OF_INT){
                 //Este if no me gusta mucho porque me parece que me trae problemas con otras funciones pero bueno
                 //Lo voy a descubrir en la parte 3 del ejercicio, por ahora sirve
                 //I think I accidently did the null part --I did
-                if (intBuffer.get(cSlotNum) <= rInBlock){
+                if (intBuffer.get(cSlotNum+1) < rInBlock){
                     return null;
                     //return nextRID;
                 }
+                // else if (cSlotNum+1 > rInBlock){
+                //     return null;
+                // }
                 // System.out.println("recordsChecked: " + recordsChecked);
                 // System.out.println("cSLotNum: " + nextSlotNum);
                 // System.out.println("Records checked: " + recordsChecked);
                 // setRecordsChecked(recordsChecked+1);
                 // System.out.println("");
                 // System.out.println("Next id: " + nextRID.slotNum);
-               
+                RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);
                 return nextRID;
             }
             

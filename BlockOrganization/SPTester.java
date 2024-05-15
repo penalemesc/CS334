@@ -81,6 +81,56 @@ public class SPTester
         }
     }
 
+     public static class Test3 implements Testable
+    {
+        public void test() throws Exception
+        {
+            int buffSize = 20;
+            int limit = 20;
+            byte[] tmpBuf = new byte[buffSize];
+
+            SlottedBlock sp = new SlottedBlock(new Block());
+            sp.init();
+            sp.setBlockId(7);
+            sp.setNextBlockId(8);
+            sp.setPrevBlockId(SlottedBlock.INVALID_BLOCK);
+            //Insert records
+            for (int i=0; i < limit; i++)
+            {
+                RID rid = sp.insertRecord(tmpBuf);
+                //System.out.println("Inserted record, RID " + rid.blockId +
+                                   //", " + rid.slotNum);
+                rid = sp.nextRecord(rid);
+            }
+
+            RID rid = sp.firstRecord();
+            while (rid != null)
+            {
+                tmpBuf = sp.getRecord(rid); 
+                //System.out.println("Retrieved record, RID " + rid.blockId +
+                                   //", " + rid.slotNum);
+                rid = sp.nextRecord(rid);
+            }
+
+            //rid = sp.firstRecord();
+            //sp.deleteRecord(rid);
+            //System.out.println("Deleted first record! " + rid.slotNum);
+            RID testRid = new RID(0, 3);
+            //sp.findRecord(testRid);
+            //sp.deleteRecord(testRid);
+            //System.out.println(sp.findRecord(testRid));
+            System.out.println(sp.deleteRecord(testRid));
+            //sp.deleteRecord(testRid);
+            // while (rid != null)
+            // {
+            //     sp.deleteRecord(rid); 
+            //     System.out.println("Deleted record! " + rid.blockId +
+            //                        ", " + rid.slotNum);
+            //     rid = sp.nextRecord(rid);
+            // }
+            
+        }
+    }
 
     public static boolean runTest(Testable testObj)
     {
@@ -103,7 +153,8 @@ public class SPTester
     {
         System.out.println("Running block tests.");
 
-         runTest(new Test1());
-         runTest(new Test2());
+         //runTest(new Test1());
+         //runTest(new Test2());
+         runTest(new Test3());
     }
 }
