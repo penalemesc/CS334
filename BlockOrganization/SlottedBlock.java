@@ -94,6 +94,7 @@ public class SlottedBlock
         //static SlottedBlock initialBlock;
         //initialBlock = blockId;
         this.blockId = blockId;  
+        intBuffer.put(0, blockId);
     }
 
     /**
@@ -115,6 +116,7 @@ public class SlottedBlock
     public void setNextBlockId(int blockId)
     {
         nextB = blockId;
+        intBuffer.put(1, prevB);
     }
 
     /**
@@ -133,6 +135,7 @@ public class SlottedBlock
     public void setPrevBlockId(int blockId)
     {
         prevB = blockId;
+        intBuffer.put(2, nextB);
     }
 
     /**
@@ -185,7 +188,7 @@ public class SlottedBlock
 
     /**
      * Determines whether the record we are looking for is in the block
-     * @param rid
+     * @param rid an RID
      * @return true if the record is in the block, false if 
      * the record is not in the block
      */
@@ -333,7 +336,8 @@ public class SlottedBlock
                 RID rid = new RID(intBuffer.get(0), 4);
                 if (rInBlock == entriesToWrite){
                     //System.out.println("Se mete al if del primero" + rInBlock);
-                    setLastRecordInBlock(intBuffer.get(4));
+                    //setLastRecordInBlock(intBuffer.get(4));
+                    setLastRecordInBlock(4);
                 }
                 return rid;
             }
@@ -349,7 +353,8 @@ public class SlottedBlock
                 lastRecordInBlock =  getRecordsInBlock();
 
                 if (lastRecordInBlock == entriesToWrite){
-                    setLastRecordInBlock(intBuffer.get(4+rInBlock));
+                    // setLastRecordInBlock(intBuffer.get(4+rInBlock));
+                    setLastRecordInBlock(4+rInBlock);
                     //System.out.println("Last record is: " + getLastRecordInBlock());
                 }
                 //RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
@@ -617,35 +622,78 @@ public class SlottedBlock
         //     //System.out.println("Records left in block (else version): " + getRecordsInBlock());
         //     return false;
         // } 
-        recordsInBlock = getRecordsInBlock();
+        //recordsInBlock = getRecordsInBlock();
         boolean recordDeleted = false;
         //findRecord(rid) == intBuffer.get(i)
         //&& recordDeleted != true
         //rid.slotNum != 0
-        
-        for (int i = 0; i < data.length/SIZE_OF_INT && i >= 4; i++){
-            //No entiendo esto, si es distinto que lo borra y si no no lo borra
-            //Corte funciona, ergo si no existe el 
-            if (findRecord(rid) != intBuffer.get(i)){
-                // System.out.println("SlotNum " + rid.slotNum);
-                // System.out.println("i " + intBuffer.get(i));
-                //System.out.println("getslotnum " + intBuffer.get(rid.slotNum));
-                //System.out.println("Se mete en " + intBuffer.get(i));
-                //intBuffer.put(intBuffer.get(rid.slotNum), 0);
-                //System.out.println(intBuffer.get(rid.slotNum));
-                intBuffer.put(i);
-                //System.out.println("ibp " + intBuffer.get(rid.slotNum));
-                //recordsInBlock = getRecordsInBlock();
-                //System.out.println("get de 4 " + intBuffer.get(4));
-                recordDeleted = true;
-                break;
-            }   
-            else {
-                //System.out.println("Else");
+        //lastRecordInBlock = getLastRecordInBlock();
+        if (rid.slotNum <= 3){
+                //System.out.println("Cant delete the amount of records in block");
                 recordDeleted = false;
-                break;
+                //break;
+        }
+        else{
+            //System.out.println(data.length/SIZE_OF_INT);
+            //int i = 0; i < data.length/SIZE_OF_INT;i++
+            int count = 0;
+            for (int i = 4; count < recordsInBlock;i++){
+            //This is a check so that we dont accidently delete the amount of records in the block
+            // if (rid.slotNum == 3){
+            //     //System.out.println("Cant delete the amount of records in block");
+            //     recordDeleted = false;
+            //     //break;
+            // }
+                count++;
+                if (rid.slotNum == i){
+                    //System.out.println("SlotNum " + rid.slotNum);
+                    // System.out.println("i " + intBuffer.get(i));
+                    //System.out.println("getslotnum " + intBuffer.get(rid.slotNum));
+                    //System.out.println("Se mete en " + intBuffer.get(i));
+                    //intBuffer.put(intBuffer.get(rid.slotNum), 0);
+                    //System.out.println(intBuffer.get(rid.slotNum));
+                    intBuffer.put(i, -1);
+                    //System.out.println("ibp " + intBuffer.get(rid.slotNum));
+                    //recordsInBlock = getRecordsInBlock();
+                    //System.out.println("get de 4 " + intBuffer.get(4));
+                    recordDeleted = true;
+                    break;
+                }   
+                // else {
+                //     //System.out.println("Else");
+                //     recordDeleted = false;
+                //     //break;
+                // }
             }
         }
+        //System.out.println("lastRec " + lastRecordInBlock);
+        // for (int i = 0; i < data.length/SIZE_OF_INT;i++){
+        //     //This is a check so that we dont accidently delete the amount of records in the block
+        //     // if (rid.slotNum == 3){
+        //     //     //System.out.println("Cant delete the amount of records in block");
+        //     //     recordDeleted = false;
+        //     //     //break;
+        //     // }
+        //     if (findRecord(rid) != intBuffer.get(i)){
+        //         // System.out.println("SlotNum " + rid.slotNum);
+        //         // System.out.println("i " + intBuffer.get(i));
+        //         //System.out.println("getslotnum " + intBuffer.get(rid.slotNum));
+        //         //System.out.println("Se mete en " + intBuffer.get(i));
+        //         //intBuffer.put(intBuffer.get(rid.slotNum), 0);
+        //         //System.out.println(intBuffer.get(rid.slotNum));
+        //         intBuffer.put(i);
+        //         //System.out.println("ibp " + intBuffer.get(rid.slotNum));
+        //         //recordsInBlock = getRecordsInBlock();
+        //         //System.out.println("get de 4 " + intBuffer.get(4));
+        //         recordDeleted = true;
+        //         break;
+        //     }   
+        //     else {
+        //         //System.out.println("Else");
+        //         recordDeleted = false;
+        //         break;
+        //     }
+        // }
         // int i = 0;
         // while (i < data.length/SIZE_OF_INT){
         //     if (findRecord(rid) == intBuffer.get(i)){
@@ -671,6 +719,25 @@ public class SlottedBlock
                 intBuffer.put(3, recordsInBlock);
                 //System.out.println("records in block: " + intBuffer.get(3));
         }
+        if (recordDeleted == true && rid.slotNum == lastRecordInBlock){
+            int recordsChecked = 0;
+            setLastRecordInBlock(lastRecordInBlock-1);
+            RID record = firstRecord();
+            //int count = 0;
+            for (int i = 4; recordsChecked < recordsInBlock; i++){
+                // System.out.println("ibg: " + intBuffer.get(i));
+                // System.out.println("");
+                intBuffer.put(i, intBuffer.get(record.slotNum));
+                record = nextRecord(record);
+                recordsChecked++;
+                // System.out.println("slotnum: " + i);
+                // System.out.println("recordsChecked: " + recordsChecked);
+                // System.out.println("ibg2: " + intBuffer.get(i));
+                // System.out.println("");
+                //count++;
+                //System.out.println("Test of how many times it " + count);
+            }
+        }
         return recordDeleted;
     }
 
@@ -692,8 +759,7 @@ public class SlottedBlock
                 //System.out.println("IntBuffer.get(i): " + intBuffer.get(i));
                 //System.out.println("Se metio en el loop");
                 //--SOLUCIONADO: El if esta mal tengo que ver bien donde estoy igualando las cosas --SOLUCIONADO
-                //Antes habia un - aca en vez de un /
-                
+                //Antes habia un - aca en vez de un /      
                 //System.out.println(data.length/SIZE_OF_INT);
                 if (intBuffer.get(i) == data.length-SIZE_OF_INT){
                     //System.out.println("Se metio en el if");
@@ -731,7 +797,7 @@ public class SlottedBlock
             int cSlotNum = curRid.slotNum;
             //int nextSlotNum = cSlotNum+1;
             //int recordsChecked = getRecodsChecked();
-
+//
             // if (intBuffer.get(cSlotNum) <= data.length-SIZE_OF_INT){
             //     RID nextRID = new RID(intBuffer.get(0), intBuffer.get(cSlotNum));
             //     return nextRID;
@@ -746,7 +812,7 @@ public class SlottedBlock
             //
             //     return nextRID;
             // }
-
+            //
             //&& recordsChecked <= rInBlock
             // if (cSlotNum+1 <= data.length/SIZE_OF_INT && cSlotNum+1 <= rInBlock){
             //     RID nextRID = new RID(intBuffer.get(0), cSlotNum+1);   
@@ -802,7 +868,24 @@ public class SlottedBlock
     */
     public byte[] getRecord(RID rid)
     {
-        return null;
+        try {
+            findRecord(rid);
+            byte[] record = {-1, -1, -1, -1};
+            //tengo que crear un array que sea de largo size of int, que tenga los datos que se guardaron en rid.slotnum
+            //data.clone();
+            System.arraycopy(data, intBuffer.get(rid.slotNum), record, 0, SIZE_OF_INT);
+            //System.out.println(record.toString());
+            return record;
+        } 
+        
+        catch (BadBlockIdException bBIE) {
+            System.err.println("Invalid Block ID");
+            return null;
+        }
+        catch (BadSlotIdException bSIE){
+            System.err.println("Invalid Slot ID");
+            return null;
+        }
     }
 
     /**
