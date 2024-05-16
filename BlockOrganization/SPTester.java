@@ -78,6 +78,7 @@ public class SPTester
                                    ", " + rid.slotNum);
                 rid = sp.nextRecord(rid);
             }
+            sp.dumpBlock();
         }
     }
 
@@ -256,8 +257,8 @@ public class SPTester
     {
         public void test() throws Exception
         {
-            int buffSize = 0;
-            int limit = 0;
+            int buffSize = 20;
+            int limit = 20;
             byte[] tmpBuf = new byte[buffSize];
 
             SlottedBlock sp = new SlottedBlock(new Block());
@@ -266,12 +267,12 @@ public class SPTester
             sp.setNextBlockId(8);
             sp.setPrevBlockId(SlottedBlock.INVALID_BLOCK);
             //Insert records
-            for (int i=0; i < limit; i++)
-            {
+            
                 RID rid = sp.insertRecord(tmpBuf);
                 System.out.println("Inserted record, RID " + rid.blockId +", " + rid.slotNum);
-                rid = sp.nextRecord(rid);
-            }
+                RID testRid = new RID(7, 3);
+                rid = sp.nextRecord(testRid);
+            
 
         }
     }
@@ -298,9 +299,9 @@ public class SPTester
         System.out.println("Running block tests.");
 
          //runTest(new Test1());
-         //runTest(new Test2());
+         runTest(new Test2());
          //runTest(new Test3());
          //runTest(new Test4());
-         runTest(new Test5());
+         //runTest(new Test5());
     }
 }
