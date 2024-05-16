@@ -189,8 +189,8 @@ public class SlottedBlock
     /**
      * Determines whether the record we are looking for is in the block
      * @param rid an RID
-     * @return true if the record is in the block, false if 
-     * the record is not in the block
+     * @return -1 if the record is not in the block, the slot number of the 
+     * record if it exists in the block
      */
     public int findRecord(RID rid){
         recordsInBlock = getRecordsInBlock();
@@ -281,7 +281,6 @@ public class SlottedBlock
         return freeSpace;
     }
         
-
     /**
      * Dumps out to the screen the # of entries in the block, the location where
      * the free space starts, the slot array in a readable fashion, and the
@@ -321,49 +320,58 @@ public class SlottedBlock
         int rInBlock = getRecordsInBlock();
         int endOfB = getEndOfBlock();
         int lastRecordInBlock;
+        //System.out.println("entries to write: " + entriesToWrite);
         //Test to see if it actually puts it in: System.out.println("Entries " + intBuffer.get(0));
         try {
-            if (rInBlock == 0) {
-                System.arraycopy(record, 0, data, endOfB, 1);
-                setEndOfBlock(endOfB - SIZE_OF_INT);
-                //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
-                //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-                intBuffer.put((4), endOfB);
-                //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
-                setRecordsInBlock(rInBlock+1);
-                rInBlock = getRecordsInBlock();
-                //RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
-                RID rid = new RID(intBuffer.get(0), 4);
-                if (rInBlock == entriesToWrite){
-                    //System.out.println("Se mete al if del primero" + rInBlock);
-                    //setLastRecordInBlock(intBuffer.get(4));
-                    setLastRecordInBlock(4);
+            if (entriesToWrite < ((data.length/SIZE_OF_INT)-4)){
+                if (rInBlock == 0) {
+                    System.arraycopy(record, 0, data, endOfB, 1);
+                    setEndOfBlock(endOfB - SIZE_OF_INT);
+                    //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+                    //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+                    intBuffer.put((4), endOfB);
+                    //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+                    setRecordsInBlock(rInBlock+1);
+                    rInBlock = getRecordsInBlock();
+                    //RID rid = new RID(intBuffer.get(0), intBuffer.get(4));
+                    RID rid = new RID(intBuffer.get(0), 4);
+                    if (rInBlock == entriesToWrite){
+                        //System.out.println("Se mete al if del primero" + rInBlock);
+                        //setLastRecordInBlock(intBuffer.get(4));
+                        setLastRecordInBlock(4);
+                    }
+                    return rid;
                 }
-                return rid;
-            }
-            else {
-                System.arraycopy(record, 0, data, endOfB, 1);
-                setEndOfBlock(endOfB - SIZE_OF_INT);
-                //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
-                //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
-                intBuffer.put((4+rInBlock), endOfB);
-                //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
-                
-                setRecordsInBlock(rInBlock+1);
-                lastRecordInBlock =  getRecordsInBlock();
+                else {
+                    System.arraycopy(record, 0, data, endOfB, 1);
+                    setEndOfBlock(endOfB - SIZE_OF_INT);
+                    //El largo del record no importa porque el header de donde esta tiene el lugar de donde esta guardado la info del siguiente 
+                    //Los records se van guardando de manera sequencial desde el fin del bloque hacia el inicio
+                    intBuffer.put((4+rInBlock), endOfB);
+                    //System.out.println("Test of iB: " + intBuffer.get(1+i)); 
+                    
+                    setRecordsInBlock(rInBlock+1);
+                    lastRecordInBlock =  getRecordsInBlock();
 
-                if (lastRecordInBlock == entriesToWrite){
-                    // setLastRecordInBlock(intBuffer.get(4+rInBlock));
-                    setLastRecordInBlock(4+rInBlock);
-                    //System.out.println("Last record is: " + getLastRecordInBlock());
+                    if (lastRecordInBlock == entriesToWrite){
+                        // setLastRecordInBlock(intBuffer.get(4+rInBlock));
+                        setLastRecordInBlock(4+rInBlock);
+                        //System.out.println("Last record is: " + getLastRecordInBlock());
+                    }
+                    //RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
+                    RID rid = new RID(intBuffer.get(0), (4+rInBlock));
+                    //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
+                    //System.out.println("Records in block: " + rInBlock);
+                    return rid;
+                    
                 }
-                //RID rid = new RID(intBuffer.get(0), intBuffer.get(4+rInBlock));
-                RID rid = new RID(intBuffer.get(0), (4+rInBlock));
-                //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
-                //System.out.println("Records in block: " + rInBlock);
-                return rid;
-                
             }
+            else{
+                //System.out.println("Sorry the block is full");
+                //throw BlockFullException e;
+                throw new BlockFullException();
+            }
+            
         } 
         catch (BlockFullException bFE) {
             //System.out.println("Espacio libre: " + getAvailableSpace() + " Intbufferlength: " + intBufferLength);
