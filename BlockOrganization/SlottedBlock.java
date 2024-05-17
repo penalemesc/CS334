@@ -1,8 +1,6 @@
 import java.lang.reflect.Array;
 import java.nio.*;
 
-import javax.xml.crypto.dsig.SignedInfo;
-
 /**
  * Slotted file block. This is a wrapper around a traditional Block that
  * adds the appropriate struture to it.
@@ -182,9 +180,7 @@ public class SlottedBlock
         int recordsChecked = 0;
         int recordToDelete;
         for (int i = 4; i < data.length/SIZE_OF_INT && recordsChecked <= recordsInBlock; i++){
-
             if (intBuffer.get(rid.slotNum) == intBuffer.get(i)){
-
                 recordsChecked++;
                 recordExists = true;
                 break;
