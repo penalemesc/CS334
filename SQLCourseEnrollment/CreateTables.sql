@@ -25,7 +25,7 @@
    CREATE TABLE course (
           cno int,
           cname varchar(50),
-          dname varchar(50)  REFERENCES dept (dname)
+          dname varchar(50)  REFERENCES dept (dname),
           primary key (cno, dname)
           );
 
@@ -35,8 +35,8 @@
           );
 
    CREATE TABLE section (
-          dname varchar(50) REFERENCES dept (dname),
-          cno int REFERENCES course (cno),
+          dname varchar(50),
+          cno int,
           sectno float primary key,
           pname varchar(50)
           );
@@ -44,7 +44,7 @@
    CREATE TABLE enroll (
           sid int PRIMARY KEY REFERENCES student (sid),
           grade float,
-          dname varchar(50) REFERENCES dept (dname),
-          cno int REFERENCES course (cno),
+          dname varchar(50),
+          cno int,
           sectno float REFERENCES section (sectno)
           );
